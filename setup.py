@@ -3,6 +3,8 @@
 
 # pylint: disable=bad-indentation
 
+from distutils.command.build import build
+from distutils.command.clean import clean
 import glob
 import io
 import os
@@ -121,10 +123,24 @@ def get_install_requires():
   return requires
 
 
-copy_typeshed()
-if build_utils:
-  e = build_utils.generate_files()
-  assert not e, e
+class pytype_build(build):
+
+  def run(self):
+    copy_typeshed()
+    if build_utils:
+      e = build_utils.generate_files()
+      assert not e, e
+    super(pytype_build, self).run()
+
+
+class pytype_clean(clean):
+
+  def run(self):
+    super(pytype_clean, self).run()
+    if build_utils:
+      build_utils.clean_generated_files()
+
+
 setup(
     name='pytype',
     version=get_version(),
@@ -162,6 +178,10 @@ setup(
     },
     package_data={'pytype': get_data_files()},
     install_requires=get_install_requires(),
+    cmdclass={
+        'build': pytype_build,
+        'clean': pytype_clean,
+    },
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
@@ -174,5 +194,3 @@ setup(
     ],
     ext_modules=[get_parser_ext()],
 )
-if build_utils:
-  build_utils.clean_generated_files()
