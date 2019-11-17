@@ -289,5 +289,8 @@ def generate_files():
 
 def clean_generated_files():
   for gen_file in GEN_FILE_LIST:
+    fpath = os.path.join(SRC_PYI_DIR, gen_file)
+    if not os.path.exists(fpath):
+      continue
     print("Deleting %s from source tree ...\n" % gen_file)
-    os.remove(os.path.join(SRC_PYI_DIR, gen_file))
+    os.remove(fpath)
